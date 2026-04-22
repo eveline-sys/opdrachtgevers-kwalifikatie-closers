@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Opdrachtgeverskwalificatie · The Houses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --sand: #f8f6f2;
+    --black: #000000;
+    --dark-beige: #837d77;
+    --mid-grey: #a7a4ac;
+    --soft: #ede9e2;
+    --accent: #2a2622;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    background: var(--sand);
+    color: var(--black);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 64px 28px 96px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 72px;
+  }
+
+  .eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+    margin-bottom: 28px;
+    font-weight: 500;
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    background: var(--black);
+    color: var(--sand);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 28px;
+    font-weight: 400;
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(38px, 6vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: var(--dark-beige);
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* PROGRESS */
+  .progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 56px;
+  }
+
+  .progress-dot {
+    width: 28px;
+    height: 2px;
+    background: var(--mid-grey);
+    opacity: 0.4;
+    transition: all 0.4s ease;
+  }
+
+  .progress-dot.active {
+    background: var(--black);
+    opacity: 1;
+    width: 44px;
+  }
+
+  .progress-dot.completed {
+    background: var(--black);
+    opacity: 0.5;
+  }
+
+  /* STEP */
+  .step {
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .step.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-label {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(28px, 4.4vw, 38px);
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .step-intro {
+    font-size: 15.5px;
+    color: var(--accent);
+    margin-bottom: 44px;
+    line-height: 1.65;
+    max-width: 620px;
+  }
+
+  /* QUESTION BLOCK */
+  .question {
+    margin-bottom: 36px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid rgba(131, 125, 119, 0.18);
+  }
+
+  .question:last-of-type {
+    border-bottom: none;
+  }
+
+  .q-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--dark-beige);
+    margin-bottom: 10px;
+  }
+
+  .q-text {
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .q-helper {
+    font-size: 13.5px;
+    color: var(--dark-beige);
+    margin-bottom: 20px;
+    line-height: 1.55;
+    font-style: italic;
+  }
+
+  /* RADIO / CHOICES */
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .choice {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: transparent;
+    border: 1px solid rgba(131, 125, 119, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    text-align: left;
+    color: var(--black);
+  }
+
+  .choice:hover {
+    border-color: var(--black);
+    background: var(--soft);
+  }
+
+  .choice.selected {
+    border-color: var(--black);
+    background: var(--black);
+    color: var(--sand);
+  }
+
+  .choice-marker {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.2s;
+  }
+
+  .choice.selected .choice-marker::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background: currentColor;
+    border-radius: 50%;
+  }
+
+  /* BUTTONS */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 56px;
+    gap: 16px;
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 16px 32px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    background: var(--black);
+    color: var(--sand);
+  }
+
+  .btn:hover:not(:disabled) {
+    background: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--dark-beige);
+    padding: 16px 0;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: transparent;
+    color: var(--black);
+    transform: none;
+  }
+
+  /* RESULT */
+  .result-block {
+    margin-bottom: 48px;
+  }
+
+  .result-label {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .result-verdict {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(32px, 5vw, 44px);
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+
+  .result-body {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .result-body strong {
+    font-weight: 500;
+    color: var(--black);
+  }
+
+  .mirror-box {
+    background: var(--black);
+    color: var(--sand);
+    padding: 40px 36px;
+    margin: 32px 0;
+    position: relative;
+  }
+
+  .mirror-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 1px;
+    background: var(--sand);
+  }
+
+  .mirror-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--mid-grey);
+    margin-bottom: 16px;
+  }
+
+  .mirror-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 26px;
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+
+  .mirror-body {
+    font-size: 15.5px;
+    line-height: 1.7;
+    opacity: 0.88;
+  }
+
+  .mirror-body strong {
+    color: var(--sand);
+    font-weight: 500;
+  }
+
+  /* CHECKLIST */
+  .checklist {
+    background: var(--soft);
+    padding: 32px 30px;
+    margin: 32px 0;
+  }
+
+  .checklist-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    margin-bottom: 20px;
+    font-weight: 300;
+  }
+
+  .check-item {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+
+  .check-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .check-marker {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--black);
+    margin-top: 3px;
+  }
+
+  /* TWO-COLUMN REFLECTIE */
+  .reflection-intro {
+    font-size: 15.5px;
+    color: var(--accent);
+    line-height: 1.7;
+    margin-bottom: 32px;
+    padding: 24px 26px;
+    background: var(--soft);
+    border-left: 2px solid var(--black);
+  }
+
+  .reflection-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  @media (min-width: 720px) {
+    .reflection-columns {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .reflection-col {
+    padding: 26px 24px;
+    border: 1px solid rgba(131, 125, 119, 0.3);
+    background: var(--sand);
+  }
+
+  .reflection-col-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 20px;
+    margin-bottom: 6px;
+    font-weight: 400;
+  }
+
+  .reflection-col-sub {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+
+  .reflection-col-body {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--accent);
+  }
+
+  .reflection-col-body ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .reflection-col-body li {
+    padding-left: 18px;
+    position: relative;
+    margin-bottom: 10px;
+  }
+
+  .reflection-col-body li::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: var(--dark-beige);
+  }
+
+  /* TYPE BADGE */
+  .type-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--black);
+    color: var(--sand);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+
+  .type-badge.startup {
+    background: var(--dark-beige);
+  }
+
+  /* SIGNATURE */
+  .signature {
+    text-align: center;
+    margin-top: 72px;
+    padding-top: 36px;
+    border-top: 1px solid rgba(131, 125, 119, 0.2);
+  }
+
+  .sig-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--black);
+    margin-bottom: 6px;
+  }
+
+  .sig-sub {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+    font-weight: 500;
+  }
+
+  /* RESTART */
+  .restart-btn {
+    display: inline-block;
+    margin-top: 32px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--dark-beige);
+    padding: 4px 0;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .restart-btn:hover {
+    color: var(--black);
+    border-color: var(--black);
+  }
+
+  /* INTRO BLOCK */
+  .intro-note {
+    background: var(--soft);
+    padding: 28px 28px;
+    margin-bottom: 40px;
+    border-left: 2px solid var(--black);
+  }
+
+  .intro-note-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 20px;
+    margin-bottom: 10px;
+    font-weight: 400;
+  }
+
+  .intro-note-body {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--accent);
+  }
+
+  /* SUMMARY PIJLERS */
+  .pillar-summary {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin: 32px 0;
+  }
+
+  .pillar-item {
+    padding: 18px 22px;
+    background: var(--sand);
+    border: 1px solid rgba(131, 125, 119, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .pillar-name {
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+
+  .pillar-score {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--dark-beige);
+  }
+
+  .pillar-score.pass {
+    color: var(--black);
+  }
+
+  .pillar-score.fail {
+    color: var(--dark-beige);
+    text-decoration: line-through;
+  }
+
+  @media (max-width: 560px) {
+    .container { padding: 40px 20px 72px; }
+    .nav { flex-direction: column-reverse; }
+    .btn, .btn-secondary { width: 100%; text-align: center; }
+    .mirror-box { padding: 32px 24px; }
+    .checklist { padding: 26px 22px; }
+  }
+
+  /* INPUT FIELDS */
+  .input-group {
+    margin-bottom: 32px;
+  }
+
+  .input-label {
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+    margin-bottom: 10px;
+    font-weight: 500;
+    display: block;
+  }
+
+  .input-helper {
+    font-size: 13px;
+    color: var(--dark-beige);
+    margin-bottom: 14px;
+    font-style: italic;
+    line-height: 1.55;
+  }
+
+  .text-input {
+    width: 100%;
+    padding: 14px 18px;
+    background: transparent;
+    border: 1px solid rgba(131, 125, 119, 0.4);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--black);
+    transition: border 0.2s;
+  }
+
+  .text-input:focus {
+    outline: none;
+    border-color: var(--black);
+  }
+
+  textarea.text-input {
+    min-height: 140px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  /* DOWNLOAD BLOCK */
+  .download-block {
+    background: var(--soft);
+    padding: 36px 32px;
+    margin: 48px 0 24px;
+    text-align: center;
+  }
+
+  .download-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 24px;
+    margin-bottom: 10px;
+    font-weight: 400;
+  }
+
+  .download-sub {
+    font-size: 14px;
+    color: var(--dark-beige);
+    margin-bottom: 22px;
+    line-height: 1.6;
+  }
+
+  /* PDF LAYOUT (hidden until generated) */
+  .pdf-template {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    width: 794px;
+    background: var(--sand);
+    padding: 60px 56px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--black);
+  }
+
+  .pdf-header {
+    border-bottom: 1px solid var(--black);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .pdf-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+  }
+
+  .pdf-meta {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+    text-align: right;
+    font-weight: 500;
+  }
+
+  .pdf-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 38px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .pdf-subtitle {
+    font-size: 13px;
+    color: var(--dark-beige);
+    margin-bottom: 32px;
+  }
+
+  .pdf-section {
+    margin-bottom: 28px;
+  }
+
+  .pdf-section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .pdf-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 20px;
+    margin-bottom: 12px;
+    font-weight: 400;
+  }
+
+  .pdf-section p {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .pdf-answer-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(131, 125, 119, 0.2);
+    font-size: 12px;
+  }
+
+  .pdf-answer-row:last-child { border-bottom: none; }
+
+  .pdf-answer-q {
+    color: var(--accent);
+    flex: 1;
+  }
+
+  .pdf-answer-v {
+    color: var(--black);
+    font-weight: 500;
+    text-align: right;
+    min-width: 110px;
+  }
+
+  .pdf-mirror {
+    background: var(--black);
+    color: var(--sand);
+    padding: 24px 22px;
+    margin: 16px 0;
+  }
+
+  .pdf-mirror-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .pdf-mirror-body {
+    font-size: 12px;
+    line-height: 1.65;
+    opacity: 0.9;
+  }
+
+  .pdf-note {
+    background: var(--soft);
+    padding: 20px 22px;
+    margin: 14px 0;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--accent);
+    white-space: pre-wrap;
+  }
+
+  .pdf-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(131, 125, 119, 0.3);
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--dark-beige);
+  }
+
+  .followup textarea.text-input {
+    min-height: 90px;
+  }
+
+  /* INLINE TEXT INPUT (voor follow-up op choice) */
+  .followup {
+    margin-top: 18px;
+    padding-left: 2px;
+    display: none;
+  }
+
+  .followup.visible {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .followup-label {
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .followup-helper {
+    font-size: 12.5px;
+    color: var(--dark-beige);
+    margin-bottom: 10px;
+    font-style: italic;
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">H.</div>
+    <div class="eyebrow">The Houses &middot; Closer Kwalificatie</div>
+    <h1>Is deze opdrachtgever<br>écht de juiste voor jou?</h1>
+    <p class="subtitle">Geen test om af te vinken. Een spiegel, om bewust te kiezen bij wie je je tijd, energie en reputatie verbindt.</p>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress">
+    <div class="progress-dot active" data-step="0"></div>
+    <div class="progress-dot" data-step="1"></div>
+    <div class="progress-dot" data-step="2"></div>
+    <div class="progress-dot" data-step="3"></div>
+    <div class="progress-dot" data-step="4"></div>
+    <div class="progress-dot" data-step="5"></div>
+  </div>
+
+  <!-- STEP 0: INTRO -->
+  <div class="step active" data-step="0">
+    <div class="step-label">Voordat je begint</div>
+    <h2 class="step-title">Lees dit even.</h2>
+
+    <div class="intro-note">
+      <div class="intro-note-title">Wat deze test je niet gaat vertellen</div>
+      <div class="intro-note-body">Niet of een opdrachtgever "goed" of "slecht" is. Wél of jij begrijpt waar je ja tegen zegt, en of jij op dit moment past bij wat deze samenwerking van je gaat vragen.</div>
+    </div>
+
+    <p class="result-body">Er zijn grofweg twee type opdrachtgevers waar je als closer bij terechtkomt: <strong>de startup</strong> die nog aan het bouwen is, en <strong>de bewezen opdrachtgever</strong> met een structureel hoge omzet. Beide zijn legitiem. Beide vragen iets totaal verschillends van jou.</p>
+
+    <p class="result-body">We doen dit in vier stappen:</p>
+
+    <div class="pillar-summary">
+      <div class="pillar-item">
+        <span class="pillar-name">1. Heb je je voorbereiding gedaan?</span>
+        <span class="pillar-score">5 checks</span>
+      </div>
+      <div class="pillar-item">
+        <span class="pillar-name">2. Welk type opdrachtgever is dit?</span>
+        <span class="pillar-score">5 vragen</span>
+      </div>
+      <div class="pillar-item">
+        <span class="pillar-name">3. Valkuilen voor beide types</span>
+        <span class="pillar-score">reflectie</span>
+      </div>
+      <div class="pillar-item">
+        <span class="pillar-name">4. Jouw reflectie + rapport</span>
+        <span class="pillar-score">pdf download</span>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-secondary" disabled></button>
+      <button class="btn" onclick="nextStep()">Start de test</button>
+    </div>
+  </div>
+
+  <!-- STEP 1: VOORONDERZOEK -->
+  <div class="step" data-step="1">
+    <div class="step-label">Stap 1 van 4</div>
+    <h2 class="step-title">Heb je je voorbereiding op de kennismaking gedaan?</h2>
+    <p class="step-intro">Voor je überhaupt op gesprek gaat bij een potentiële opdrachtgever, hoor je dit al te hebben onderzocht. Vink eerlijk aan wat je hebt kunnen vinden.</p>
+
+    <div class="question">
+      <div class="q-number">i.</div>
+      <div class="q-text">Draait deze opdrachtgever actief betaalde ads?</div>
+      <div class="q-helper">Meta, Google, TikTok. Check de Meta Ad Library of je ziet ze zelf voorbijkomen.</div>
+      <div class="choices" data-q="v1">
+        <button class="choice" data-val="1"><span class="choice-marker"></span>Ja, zichtbaar actief</button>
+        <button class="choice" data-val="0"><span class="choice-marker"></span>Nee, of ik heb niet gekeken</button>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-number">ii.</div>
+      <div class="q-text">Is de klant actief op meerdere platformen?</div>
+      <div class="q-helper">Denk aan podcast, YouTube, LinkedIn, TikTok. Niet alleen Instagram.</div>
+      <div class="choices" data-q="v2">
+        <button class="choice" data-val="1"><span class="choice-marker"></span>Ja, op minimaal 2 platformen zichtbaar</button>
+        <button class="choice" data-val="0"><span class="choice-marker"></span>Alleen op 1 platform of nauwelijks zichtbaar</button>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-number">iii.</div>
+      <div class="q-text">Heb je informatie kunnen vinden over de trajecten die ze aanbieden?</div>
+      <div class="q-helper">Via de website, ChatGPT, salespages of via content. Weet jij wat ze precies verkopen?</div>
+      <div class="choices" data-q="v3">
+        <button class="choice" data-val="1"><span class="choice-marker"></span>Ja, helder beeld van het aanbod</button>
+        <button class="choice" data-val="0"><span class="choice-marker"></span>Vaag of onvindbaar</button>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-number">iv.</div>
+      <div class="q-text">Zie je een Calendly-linkje (of vergelijkbaar) in de bio?</div>
+      <div class="q-helper">Teken dat er actief calls worden geboekt en een salesproces loopt.</div>
+      <div class="choices" data-q="v4">
+        <button class="choice" data-val="1"><span class="choice-marker"></span>Ja, zichtbaar boekingssysteem</button>
+        <button class="choice" data-val="0"><span class="choice-marker"></span>Nee of niet kunnen vinden</button>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-number">v.</div>
+      <div class="q-text">Is er voldoende high end social proof?</div>
+      <div class="q-helper">Klantresultaten op hoogwaardig niveau. Geen losse shoutouts, maar structurele bewijsvoering.</div>
+      <div class="choices" data-q="v5">
+        <button class="choice" data-val="1"><span class="choice-marker"></span>Ja, duidelijk aanwezig</button>
+        <button class="choice" data-val="0"><span class="choice-marker"></span>Nauwelijks of geen</button>
+      </div>
+      <div class="followup" id="followup-v5">
+        <div class="followup-label">Wat heb je exact gevonden?</div>
+        <div class="followup-helper">Wees concreet. Welke klantresultaten heb je gezien, op welk niveau, en waaraan herleid jij dat dit "voldoende high end" is? Dit veld is verplicht om verder te kunnen.</div>
+        <textarea class="text-input" id="input-socialproof" placeholder="Beschrijf wat je hebt gevonden..."></textarea>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-secondary" onclick="prevStep()">Terug</button>
+      <button class="btn" onclick="nextStep()" id="next-1" disabled>Volgende stap</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: TYPERING OPDRACHTGEVER -->
+  <div class="step" data-step="2">
+    <div class="step-label">Stap 2 van 4</div>
+    <h2 class="step-title">Welk type opdrachtgever heb je voor je?</h2>
+    <p class="step-intro">Deze informatie haal je op tijdens het kennismakingsgesprek. Wees streng en eerlijk. Niet wat je hoopt, maar wat je daadwerkelijk van de opdrachtgever hebt kunnen verifiëren.</p>
+
+    <div class="question">
+      <div class="q-number">i.</div>
+      <div class="q-text">Wat draait deze opdrachtgever structureel per maand aan omzet?</div>
+      <div class="q-helper">Minimaal 6 maanden consistent. Geen eenmalige piek.</div>
+      <div class="choices" data-q="t1">
+        <button class="choice" data-val="bewezen"><span class="choice-marker"></span>€40K+ per maand, consistent ≥6 maanden</button>
+        <button class="choice" data-val="startup"><span class="choice-marker"></span>Minder, wisselend, net gestart of onbekend</button>
+      </div>
+      <div class="followup" id="followup-t1">
+        <div class="followup-label">Wat is er wel bekend aan omzet?</div>
+        <div class="followup-helper">Wees zo concreet mogelijk. Welke cijfers heb je gehoord in het gesprek? Over welke periode? Dit veld is verplicht om verder te kunnen.</div>
+        <textarea class="text-input" id="input-t1" placeholder="Beschrijf wat je weet over de omzet..."></textarea>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-number">ii.</div>
+      <div class="q-text">Hoeveel calls draaien ze per week op dit moment?</div>
+      <div class="q-helper">Concreet aantal per week, minimaal over de afgelopen 3 maanden. Niet alleen de laatste 2 weken.</div>
+      <div class="choices" data-q="t2">
+        <button class="choice" data-val="bewezen"><span class="choice-marker"></span>Voldoende volume voor een closer om op te draaien</button>
+        <button class="choice" data-val="startup"><span class="choice-marker"></span>Weinig / onduidelijk / moet nog opgebouwd worden</button>
+      </div>
+      <div class="followup" id="followup-t2">
+        <div class="followup-label">Hoeveel calls draaien ze concreet?</div>
+        <div class="followup-helper">Wat is het concrete aantal calls per week? Over welke periode is dit aantal gemeten? Dit veld is verplicht om verder te kunnen.</div>
+        <textarea class="text-input" id="input-t2" placeholder="Beschrijf het callvolume per week en over welke periode..."></textarea>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-number">iii.</div>
+      <div class="q-text">Staan systemen, processen en team al?</div>
+      <div class="q-helper">CRM, betaallinks, overdracht naar coach, setter, backoffice.</div>
+      <div class="choices" data-q="t3">
+        <button class="choice" data-val="bewezen"><span class="choice-marker"></span>Grotendeels gestructureerd aanwezig</button>
+        <button class="choice" data-val="startup"><span class="choice-marker"></span>Nog in opbouw of chaotisch</button>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-number">iv.</div>
+      <div class="q-text">Heeft de opdrachtgever al een bewezen klantreis met social proof?</div>
+      <div class="q-helper">Concrete klantresultaten, testimonials op high end niveau.</div>
+      <div class="choices" data-q="t4">
+        <button class="choice" data-val="bewezen"><span class="choice-marker"></span>Ja, structureel aanwezig</button>
+        <button class="choice" data-val="startup"><span class="choice-marker"></span>Weinig of in opbouw</button>
+      </div>
+      <div class="followup" id="followup-t4">
+        <div class="followup-label">Hoe ziet deze klantreis er concreet uit?</div>
+        <div class="followup-helper">Welke touchpoints heeft een lead voor ze op gesprek komt? Denk aan ads, content, podcasts, freebies, DM's, VSL's. Dit veld is verplicht om verder te kunnen.</div>
+        <textarea class="text-input" id="input-t4" placeholder="Beschrijf de klantreis..."></textarea>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-number">v.</div>
+      <div class="q-text">Worden er heldere conversie-eisen of KPI's gesteld aan jou als closer?</div>
+      <div class="q-helper">Een bewezen opdrachtgever weet vaak exact welke cijfers ze willen zien. Een startup is vaak nog aan het ontdekken.</div>
+      <div class="choices" data-q="t5">
+        <button class="choice" data-val="bewezen"><span class="choice-marker"></span>Ja, concrete verwachtingen</button>
+        <button class="choice" data-val="startup"><span class="choice-marker"></span>Vaag of "we zien wel"</button>
+      </div>
+      <div class="followup" id="followup-t5">
+        <div class="followup-label">Wat verwachten ze concreet van jou?</div>
+        <div class="followup-helper">Welke KPI's, conversie-percentages of omzetdoelen zijn genoemd? Op welke termijn? Dit veld is verplicht om verder te kunnen.</div>
+        <textarea class="text-input" id="input-t5" placeholder="Beschrijf de verwachtingen..."></textarea>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-secondary" onclick="prevStep()">Terug</button>
+      <button class="btn" onclick="nextStep()" id="next-2" disabled>Volgende stap</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: REFLECTIE BEIDE TYPES -->
+  <div class="step" data-step="3">
+    <div class="step-label">Stap 3 van 4</div>
+    <h2 class="step-title">Lees allebei. Wees eerlijk.</h2>
+    <p class="step-intro">Voor je de uitkomst krijgt, wil ik dat je ziet dat beide types een andere uitkomst kunnen hebben dan jouw verwachting bij de start. Niet bij "anderen", maar ook bij jou. Lees dit met de moed om jezelf te herkennen.</p>
+
+    <div class="reflection-intro">
+      <strong>Wat ik zie gebeuren in de praktijk:</strong> beide routes kunnen een andere uitkomst hebben dan jouw verwachting bij de start, maar om een tegenovergestelde reden. De ene doordat er vooraf onvoldoende is onderzocht. De andere doordat de opdracht nog niet helemaal past bij waar jij als closer nu staat.
+    </div>
+
+    <div class="reflection-columns">
+
+      <div class="reflection-col">
+        <div class="reflection-col-sub">Route 1</div>
+        <div class="reflection-col-title">De startup die je voor bewezen aanzag</div>
+        <div class="reflection-col-body">
+          <p style="margin-bottom:12px;">Je dacht een sterke opdrachtgever te hebben. In werkelijkheid is de omzet minimaal. Geen eerlijke verwachting geschetst. En dan loop je vast op:</p>
+          <ul>
+            <li>Te weinig leads om op te draaien</li>
+            <li>Geen systemen, dus jij lost alles op</li>
+            <li>Maanden met minimaal inkomen</li>
+            <li>Frustratie: "waarom werkt dit niet?"</li>
+          </ul>
+          <p style="margin-top:14px;"><strong>De oorzaak:</strong> onvoldoende vooronderzoek. Je had het kunnen zien.</p>
+        </div>
+      </div>
+
+      <div class="reflection-col">
+        <div class="reflection-col-sub">Route 2</div>
+        <div class="reflection-col-title">De bewezen opdrachtgever waar jij nog niet klaar voor bent</div>
+        <div class="reflection-col-body">
+          <p style="margin-bottom:12px;">Je wilde meteen een high end opdracht met een bewezen trackrecord. Logisch, de omzet is er, de leads zijn warm. Maar je onderschatte wat er van jou gevraagd wordt. En dan zie ik:</p>
+          <ul>
+            <li>Te hoog gegrepen voor jou als eerste opdracht</li>
+            <li>Geen ruimte voor een leerfase</li>
+            <li>Zelfvertrouwen dat knakt na een paar slechte weken</li>
+            <li>De lat lijkt onbereikbaar</li>
+          </ul>
+          <p style="margin-top:14px;"><strong>De oorzaak:</strong> het past nog niet helemaal bij waar jij als closer nu staat. Je wist dit ergens, maar wilde er graag toch voor gaan.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="result-body" style="text-align:center;font-style:italic;color:var(--dark-beige);">Herken je iets? Dan is de volgende stap geen oordeel, het is een uitnodiging om bewust te kiezen.</p>
+
+    <div class="nav">
+      <button class="btn-secondary" onclick="prevStep()">Terug</button>
+      <button class="btn" onclick="nextStep()">Volgende stap</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: NAAM + REFLECTIE -->
+  <div class="step" data-step="4">
+    <div class="step-label">Stap 4 van 4</div>
+    <h2 class="step-title">Voor Eveline leest: jouw woorden.</h2>
+    <p class="step-intro">Voor we naar de uitkomst gaan, wil ik dat je even stilstaat. Je antwoorden zeggen iets, maar jouw eigen reflectie zegt meer. Neem hier even de tijd voor.</p>
+
+    <div class="input-group">
+      <label class="input-label">Je naam</label>
+      <div class="input-helper">Zodat Eveline weet wie dit gestuurd heeft.</div>
+      <input type="text" class="text-input" id="input-naam" placeholder="Jouw naam" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Over wie gaat deze kwalificatie?</label>
+      <div class="input-helper">Naam of handle van de potentiële opdrachtgever. Mag ook anoniem als je liever niet deelt.</div>
+      <input type="text" class="text-input" id="input-opdrachtgever" placeholder="Naam opdrachtgever of 'anoniem'" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Wat wil je dat Eveline meeneemt als ze dit leest?</label>
+      <div class="input-helper">Wat viel je op tijdens deze test? Waar twijfel je over? Wat voel je? Dit is het moment om eerlijk te zijn. Niet tegen mij, maar tegen jezelf.</div>
+      <textarea class="text-input" id="input-reflectie" placeholder="Schrijf hier..."></textarea>
+    </div>
+
+    <div class="nav">
+      <button class="btn-secondary" onclick="prevStep()">Terug</button>
+      <button class="btn" onclick="showResult()">Toon mijn spiegel</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: RESULT -->
+  <div class="step" data-step="5">
+    <div class="step-label">Je uitkomst</div>
+    <div id="result-content"></div>
+
+    <div class="download-block" id="download-block">
+      <div class="download-title">Download je rapport</div>
+      <div class="download-sub">Download je volledige uitkomst als PDF en deel 'm met Eveline in Discord.</div>
+      <button class="btn" onclick="downloadPDF()" id="download-btn">Download als PDF</button>
+    </div>
+
+    <div class="signature">
+      <div class="sig-mark">Eveline</div>
+      <div class="sig-sub">The Houses</div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="restart-btn" onclick="restart()">Opnieuw doen</button>
+    </div>
+  </div>
+
+  <!-- PDF TEMPLATE (hidden, used for generation) -->
+  <div class="pdf-template" id="pdf-template"></div>
+
+</div>
+
+<script>
+  const answers = {
+    v1: null, v2: null, v3: null, v4: null, v5: null,
+    t1: null, t2: null, t3: null, t4: null, t5: null
+  };
+
+  let currentStep = 0;
+
+  document.querySelectorAll('.choice').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const group = btn.parentElement;
+      const qKey = group.dataset.q;
+      const val = btn.dataset.val;
+
+      group.querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      answers[qKey] = val;
+
+      // Toon followup tekstvelden (altijd, ongeacht antwoord)
+      const followupKeys = ['v5', 't1', 't2', 't4', 't5'];
+      if (followupKeys.includes(qKey)) {
+        const followup = document.getElementById('followup-' + qKey);
+        if (followup) followup.classList.add('visible');
+      }
+
+      updateNextButtons();
+    });
+  });
+
+  // Listeners op alle verplichte tekstvelden
+  ['input-socialproof', 'input-t1', 'input-t2', 'input-t4', 'input-t5'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateNextButtons);
+  });
+
+  function updateNextButtons() {
+    const vAllAnswered = ['v1','v2','v3','v4','v5'].every(k => answers[k] !== null);
+    const spField = document.getElementById('input-socialproof');
+    const spFilled = spField && spField.value.trim().length > 0;
+    const v = vAllAnswered && spFilled;
+
+    const tAllAnswered = ['t1','t2','t3','t4','t5'].every(k => answers[k] !== null);
+    const tFieldsFilled = ['input-t1','input-t2','input-t4','input-t5'].every(id => {
+      const el = document.getElementById(id);
+      return el && el.value.trim().length > 0;
+    });
+    const t = tAllAnswered && tFieldsFilled;
+
+    document.getElementById('next-1').disabled = !v;
+    document.getElementById('next-2').disabled = !t;
+  }
+
+  function goToStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+
+    document.querySelectorAll('.progress-dot').forEach((d, i) => {
+      d.classList.remove('active', 'completed');
+      if (i < n) d.classList.add('completed');
+      if (i === n) d.classList.add('active');
+    });
+
+    currentStep = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function nextStep() { goToStep(currentStep + 1); }
+  function prevStep() { goToStep(currentStep - 1); }
+
+  function showResult() {
+    // Vooronderzoek-score
+    const vScore = ['v1','v2','v3','v4','v5'].reduce((s,k) => s + parseInt(answers[k] || 0), 0);
+
+    // Type-score
+    const bewezenCount = ['t1','t2','t3','t4','t5'].filter(k => answers[k] === 'bewezen').length;
+    const type = bewezenCount >= 4 ? 'bewezen' : bewezenCount <= 1 ? 'startup' : 'gemengd';
+
+    // Bewaar voor PDF
+    window._resultData = { vScore, type, bewezenCount };
+
+    let html = '';
+
+    // VOORONDERZOEK-UITKOMST
+    html += `<div class="result-block">`;
+    html += `<div class="result-label">Je vooronderzoek</div>`;
+
+    if (vScore < 2) {
+      html += `<h2 class="result-verdict">Je bent nog niet klaar om op gesprek te gaan.</h2>`;
+      html += `<p class="result-body">Van de vijf basischecks heb je er <strong>${vScore} van 5</strong> kunnen aanvinken. Dat is te weinig. Hier doorheen zakken betekent niet dat de opdrachtgever ongeschikt is. Het betekent dat jij nog niet genoeg weet om een eerlijk gesprek te kunnen voeren.</p>`;
+      html += `<div class="mirror-box">`;
+      html += `<div class="mirror-label">De spiegel</div>`;
+      html += `<div class="mirror-title">"Haastige spoed is zelden goed."</div>`;
+      html += `<div class="mirror-body">Voor je verder gaat: doe eerst het werk. Check de ads, de platformen, het aanbod, de Calendly, de social proof. Pas dan kun je écht beoordelen wie je voor je hebt, en kan deze test je iets betekenisvols vertellen.</div>`;
+      html += `</div>`;
+      html += `<p class="result-body">Kom terug zodra je minimaal 3 van de 5 checks eerlijk kunt aanvinken. De rest van deze uitkomst volgt daarna.</p>`;
+      html += `</div>`;
+      document.getElementById('result-content').innerHTML = html;
+      goToStep(5);
+      return;
+    }
+
+    html += `<p class="result-body"><strong>${vScore} van de 5 checks aangevinkt.</strong> ${vScore >= 4 ? 'Sterk vooronderzoek, je komt goed beslagen ten ijs.' : 'Voldoende basis, maar er zijn nog gaten in je onderzoek. Vul die voor je het gesprek ingaat.'}</p>`;
+    html += `</div>`;
+
+    // TYPE-UITKOMST + SPIEGEL
+    html += `<div class="result-block">`;
+    html += `<div class="result-label">Het type opdrachtgever</div>`;
+
+    if (type === 'bewezen') {
+      html += `<span class="type-badge">Bewezen opdrachtgever</span>`;
+      html += `<h2 class="result-verdict">Een opdrachtgever met een track record.</h2>`;
+      html += `<p class="result-body">Op basis van jouw antwoorden lijkt dit een opdrachtgever met structurele omzet, leadvolume en systemen. <strong>De vraag is niet of de business klopt. De vraag is of jij klaar bent voor wat deze lat van jou gaat vragen.</strong></p>`;
+      html += `<div class="mirror-box">`;
+      html += `<div class="mirror-label">De spiegel</div>`;
+      html += `<div class="mirror-title">"De lat ligt hier hoog. Vanaf dag één."</div>`;
+      html += `<div class="mirror-body">Wat ik vaak zie gebeuren: closers willen deze opdrachtgever omdat de omzet er is. Maar er is geen leerfase. Geen "meegroeien". Als jij de conversie niet haalt in de eerste weken, voel je dat onmiddellijk. <strong>De teleurstelling zit niet in de opdrachtgever. Die zit in het moment dat je beseft dat jij zelf nog niet op dit niveau draait.</strong><br><br>Vraag jezelf eerlijk: heb ik voldoende callervaring om vanaf dag één te presteren? Kan ik omgaan met strakke KPI's zonder dat mijn zelfvertrouwen knakt? Of wil ik dit vooral omdát het indrukwekkend klinkt?</div>`;
+      html += `</div>`;
+      html += buildChecklist('bewezen');
+
+    } else if (type === 'startup') {
+      html += `<span class="type-badge startup">Startup / in opbouw</span>`;
+      html += `<h2 class="result-verdict">Een opdrachtgever die nog aan het bouwen is.</h2>`;
+      html += `<p class="result-body">Op basis van jouw antwoorden staat deze opdrachtgever nog aan het begin. Dat is geen diskwalificatie. Het kan een prachtige leerschool zijn. <strong>Maar alleen als jij weet waar je ja tegen zegt.</strong></p>`;
+      html += `<div class="mirror-box">`;
+      html += `<div class="mirror-label">De spiegel</div>`;
+      html += `<div class="mirror-title">"Je bouwt mee. Dat is vrijheid én een risico."</div>`;
+      html += `<div class="mirror-body">Wat ik vaak zie gebeuren: closers denken dat ze een sterke opdrachtgever hebben, terwijl de omzet minimaal is. Er is geen eerlijke verwachting geschetst. <strong>Je komt erachter dat je maanden met minimaal inkomen kunt zitten terwijl je hard werkt.</strong><br><br>Vraag jezelf eerlijk: kan ik financieel 3–6 maanden overbruggen zonder noemenswaardige omzet uit deze samenwerking? Heb ik het geduld om mee te bouwen? En heb ik dit écht onderzocht, of heb ik mezelf een groter verhaal verkocht dan er is?</div>`;
+      html += `</div>`;
+      html += buildChecklist('startup');
+
+    } else {
+      html += `<span class="type-badge startup">Gemengd profiel</span>`;
+      html += `<h2 class="result-verdict">Een opdrachtgever in de overgang.</h2>`;
+      html += `<p class="result-body">Je antwoorden wijzen niet eenduidig naar bewezen of startup. Dat betekent óf dat deze opdrachtgever midden in een transitie zit, óf dat jij nog niet genoeg informatie hebt om het scherp te plaatsen. <strong>Beide vragen meer onderzoek voor je tekent.</strong></p>`;
+      html += `<div class="mirror-box">`;
+      html += `<div class="mirror-label">De spiegel</div>`;
+      html += `<div class="mirror-title">"Een grijs gebied is het gevaarlijkst."</div>`;
+      html += `<div class="mirror-body">Hier gaat het vaakst mis. Niet bij de duidelijke startup of de evidente top-performer, maar bij de opdrachtgever die "er bijna is". Je project verwachtingen op iets dat er nog niet helemaal staat. <strong>Zorg dat je scherp krijgt: werken we met een bewezen structuur of met potentie?</strong> Dat maakt verschil in wat je kunt verwachten, en wat je mag vragen.</div>`;
+      html += `</div>`;
+      html += buildChecklist('gemengd');
+    }
+
+    html += `</div>`;
+
+    document.getElementById('result-content').innerHTML = html;
+    goToStep(5);
+  }
+
+  function buildChecklist(type) {
+    let items = [];
+
+    if (type === 'bewezen') {
+      items = [
+        'Vraag concreet naar conversiepercentages en omzetnormen die ze van eerdere closers hebben gezien',
+        'Vraag een document of transcript op van recente salescalls om het niveau te proeven',
+        'Vraag of er een inwerkperiode is en wat daarin van jou verwacht wordt',
+        'Plan vaste overlegmomenten in vóór je begint, niet tijdens',
+        'Onderzoek eerlijk: ben ik klaar om te presteren zónder leerfase?'
+      ];
+    } else if (type === 'startup') {
+      items = [
+        'Vraag naar de concrete prognose voor de komende 6 maanden, met cijfers, niet met beloftes',
+        'Vraag of er een business coach of mentor achter de opdrachtgever zit',
+        'Reken eerlijk uit wat jij maandelijks nodig hebt, en of deze opdrachtgever dat kán leveren',
+        'Bespreek wat jullie samen bedenken als het in rustige periodes tegenvalt',
+        'Bepaal voor jezelf: hoe lang geef ik dit voor ik heroverweeg?'
+      ];
+    } else {
+      items = [
+        'Vraag alsnog concreet naar omzet, callvolume en klantresultaten. Laat je niet afschepen met "dat delen we later"',
+        'Vraag een klantreis-document op: wat zien leads voor ze op gesprek komen?',
+        'Check of wat je gezien hebt (ads, platformen, social proof) strookt met wat ze nu vertellen',
+        'Stel je eigen verwachtingen bij tot je scherp weet wat je voor je hebt',
+        'Twijfel je nog? Wacht met tekenen tot je antwoord hebt.'
+      ];
+    }
+
+    let out = `<div class="checklist"><div class="checklist-title">Voor je tekent, doe dit nog:</div>`;
+    items.forEach(i => {
+      out += `<div class="check-item"><div class="check-marker"></div><div>${i}</div></div>`;
+    });
+    out += `</div>`;
+    return out;
+  }
+
+  function buildPDFTemplate() {
+    const { vScore, type } = window._resultData;
+    const naam = document.getElementById('input-naam').value.trim() || 'Naamloos';
+    const opdrachtgever = document.getElementById('input-opdrachtgever').value.trim() || 'Anoniem';
+    const reflectie = document.getElementById('input-reflectie').value.trim() || 'Geen reflectie ingevuld.';
+
+    const vandaag = new Date().toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Vragen-lookup voor leesbare PDF
+    const vQuestions = [
+      ['Draait de opdrachtgever ads?', answers.v1 === '1' ? 'Ja' : 'Nee'],
+      ['Actief op meerdere platformen?', answers.v2 === '1' ? 'Ja' : 'Nee'],
+      ['Trajecten vindbaar?', answers.v3 === '1' ? 'Ja' : 'Nee'],
+      ['Calendly / boekingssysteem?', answers.v4 === '1' ? 'Ja' : 'Nee'],
+      ['High end social proof?', answers.v5 === '1' ? 'Ja' : 'Nee']
+    ];
+
+    const socialProofAntwoord = document.getElementById('input-socialproof').value.trim() || 'Niet ingevuld.';
+    const t1Antwoord = document.getElementById('input-t1').value.trim() || 'Niet ingevuld.';
+    const t2Antwoord = document.getElementById('input-t2').value.trim() || 'Niet ingevuld.';
+    const t4Antwoord = document.getElementById('input-t4').value.trim() || 'Niet ingevuld.';
+    const t5Antwoord = document.getElementById('input-t5').value.trim() || 'Niet ingevuld.';
+
+    const tQuestions = [
+      ['Structurele omzet €40K+ per maand?', answers.t1 === 'bewezen' ? 'Ja, bewezen' : 'Nee, startup of onbekend'],
+      ['Voldoende callvolume per week?', answers.t2 === 'bewezen' ? 'Ja, bewezen' : 'Nee, in opbouw'],
+      ['Systemen en team staan?', answers.t3 === 'bewezen' ? 'Ja, gestructureerd' : 'Nee, in opbouw'],
+      ['Bewezen klantreis + social proof?', answers.t4 === 'bewezen' ? 'Ja, structureel' : 'Nee, beperkt'],
+      ['Concrete conversie-eisen?', answers.t5 === 'bewezen' ? 'Ja, helder' : 'Nee, vaag']
+    ];
+
+    let typeLabel = '', typeTitle = '', mirrorTitle = '', mirrorBody = '';
+
+    if (vScore < 2) {
+      typeLabel = 'Nog niet klaar voor gesprek';
+      typeTitle = 'Je bent nog niet klaar om op gesprek te gaan.';
+      mirrorTitle = '"Haastige spoed is zelden goed."';
+      mirrorBody = `Van de 5 basischecks heb je er ${vScore} kunnen aanvinken. Dat is te weinig. Doe eerst het werk. Check de ads, platformen, het aanbod, de Calendly, de social proof voor je verder gaat. Pas dan kan deze test iets betekenisvols vertellen.`;
+    } else if (type === 'bewezen') {
+      typeLabel = 'Bewezen opdrachtgever';
+      typeTitle = 'Een opdrachtgever met een track record.';
+      mirrorTitle = '"De lat ligt hier hoog. Vanaf dag één."';
+      mirrorBody = `Closers willen deze opdrachtgever omdat de omzet er is. Maar er is geen leerfase. Als je de conversie niet haalt in de eerste weken, voel je dat onmiddellijk. De teleurstelling zit niet in de opdrachtgever. Die zit in het moment dat je beseft dat jij zelf nog niet op dit niveau draait. Vraag jezelf eerlijk: heb ik voldoende callervaring om vanaf dag één te presteren?`;
+    } else if (type === 'startup') {
+      typeLabel = 'Startup / in opbouw';
+      typeTitle = 'Een opdrachtgever die nog aan het bouwen is.';
+      mirrorTitle = '"Je bouwt mee. Dat is vrijheid én een risico."';
+      mirrorBody = `Closers denken dat ze een sterke opdrachtgever hebben terwijl de omzet minimaal is. Er is geen eerlijke verwachting geschetst. Je komt erachter dat je maanden met minimaal inkomen kunt zitten terwijl je hard werkt. Vraag jezelf eerlijk: kan ik financieel 3–6 maanden overbruggen? Heb ik het geduld om mee te bouwen?`;
+    } else {
+      typeLabel = 'Gemengd profiel';
+      typeTitle = 'Een opdrachtgever in de overgang.';
+      mirrorTitle = '"Een grijs gebied is het gevaarlijkst."';
+      mirrorBody = `Hier gaat het vaakst mis. Niet bij de duidelijke startup of de evidente top-performer, maar bij de opdrachtgever die "er bijna is". Zorg dat je scherp krijgt: werken we met een bewezen structuur of met potentie? Dat maakt verschil in wat je kunt verwachten.`;
+    }
+
+    let checklistItems = [];
+    if (vScore < 2) {
+      checklistItems = [
+        'Check de Meta Ad Library op actieve ads',
+        'Scan alle platformen (podcast, YouTube, LinkedIn, TikTok)',
+        'Zoek het aanbod uit via website en ChatGPT',
+        'Verifieer de Calendly / het boekingssysteem',
+        'Kijk naar concrete high end klantresultaten',
+      ];
+    } else if (type === 'bewezen') {
+      checklistItems = [
+        'Vraag concreet naar conversiepercentages en omzetnormen van eerdere closers',
+        'Vraag een document of transcript op van recente salescalls',
+        'Vraag of er een inwerkperiode is en wat daarin wordt verwacht',
+        'Plan vaste overlegmomenten in vóór je begint',
+        'Onderzoek eerlijk: ben ik klaar om te presteren zónder leerfase?'
+      ];
+    } else if (type === 'startup') {
+      checklistItems = [
+        'Vraag naar de concrete prognose voor de komende 6 maanden',
+        'Vraag of er een business coach of mentor achter de opdrachtgever zit',
+        'Reken eerlijk uit wat je maandelijks nodig hebt, en of dit dat kán leveren',
+        'Bespreek wat jullie samen bedenken in rustige periodes',
+        'Bepaal voor jezelf: hoe lang geef ik dit voor ik heroverweeg?'
+      ];
+    } else {
+      checklistItems = [
+        'Vraag alsnog concreet naar omzet, callvolume en klantresultaten',
+        'Vraag een klantreis-document op',
+        'Check of wat je gezien hebt strookt met wat ze nu vertellen',
+        'Twijfel je nog? Wacht met tekenen tot je antwoord hebt.'
+      ];
+    }
+
+    let html = '';
+    html += `<div class="pdf-header">`;
+    html += `<div class="pdf-logo">The Houses.</div>`;
+    html += `<div class="pdf-meta">Opdrachtgeverskwalificatie<br>${vandaag}</div>`;
+    html += `</div>`;
+
+    html += `<div class="pdf-title">${typeTitle}</div>`;
+    html += `<div class="pdf-subtitle">${typeLabel} &middot; Ingevuld door ${naam} &middot; Opdrachtgever: ${opdrachtgever}</div>`;
+
+    html += `<div class="pdf-mirror">`;
+    html += `<div class="pdf-mirror-title">${mirrorTitle}</div>`;
+    html += `<div class="pdf-mirror-body">${mirrorBody}</div>`;
+    html += `</div>`;
+
+    html += `<div class="pdf-section">`;
+    html += `<div class="pdf-section-label">Stap 1, Vooronderzoek (${vScore}/5)</div>`;
+    vQuestions.forEach(([q,v]) => {
+      html += `<div class="pdf-answer-row"><div class="pdf-answer-q">${q}</div><div class="pdf-answer-v">${v}</div></div>`;
+    });
+    html += `<div style="margin-top:14px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--dark-beige);font-weight:500;margin-bottom:6px;">Toelichting social proof</div>`;
+    html += `<div class="pdf-note">${socialProofAntwoord.replace(/\n/g, '<br>')}</div>`;
+    html += `</div>`;
+
+    html += `<div class="pdf-section">`;
+    html += `<div class="pdf-section-label">Stap 2, Typering opdrachtgever</div>`;
+    tQuestions.forEach(([q,v]) => {
+      html += `<div class="pdf-answer-row"><div class="pdf-answer-q">${q}</div><div class="pdf-answer-v">${v}</div></div>`;
+    });
+
+    const toelichtingStyle = 'margin-top:14px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--dark-beige);font-weight:500;margin-bottom:6px;';
+
+    html += `<div style="${toelichtingStyle}">Toelichting omzet</div>`;
+    html += `<div class="pdf-note">${t1Antwoord.replace(/\n/g, '<br>')}</div>`;
+
+    html += `<div style="${toelichtingStyle}">Toelichting callvolume</div>`;
+    html += `<div class="pdf-note">${t2Antwoord.replace(/\n/g, '<br>')}</div>`;
+
+    html += `<div style="${toelichtingStyle}">Toelichting klantreis</div>`;
+    html += `<div class="pdf-note">${t4Antwoord.replace(/\n/g, '<br>')}</div>`;
+
+    html += `<div style="${toelichtingStyle}">Toelichting conversie-eisen</div>`;
+    html += `<div class="pdf-note">${t5Antwoord.replace(/\n/g, '<br>')}</div>`;
+
+    html += `</div>`;
+
+    html += `<div class="pdf-section">`;
+    html += `<div class="pdf-section-label">Reflectie van ${naam}</div>`;
+    html += `<div class="pdf-note">${reflectie.replace(/\n/g, '<br>')}</div>`;
+    html += `</div>`;
+
+    html += `<div class="pdf-section">`;
+    html += `<div class="pdf-section-label">Actielijst, voor je tekent</div>`;
+    checklistItems.forEach(item => {
+      html += `<p>&ndash; ${item}</p>`;
+    });
+    html += `</div>`;
+
+    html += `<div class="pdf-footer">The Houses &middot; Closer Kwalificatie &middot; ${vandaag}</div>`;
+
+    document.getElementById('pdf-template').innerHTML = html;
+  }
+
+  async function downloadPDF() {
+    const btn = document.getElementById('download-btn');
+    const origText = btn.textContent;
+    btn.textContent = 'Bezig met genereren...';
+    btn.disabled = true;
+
+    try {
+      buildPDFTemplate();
+      const template = document.getElementById('pdf-template');
+
+      // Wacht even zodat de DOM update is afgerond
+      await new Promise(r => setTimeout(r, 100));
+
+      const canvas = await html2canvas(template, {
+        scale: 2,
+        backgroundColor: '#f8f6f2',
+        useCORS: true,
+        logging: false
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const naam = document.getElementById('input-naam').value.trim() || 'rapport';
+      const slug = naam.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      pdf.save(`opdrachtgeverskwalificatie-${slug}.pdf`);
+
+      btn.textContent = 'Gedownload ✓';
+      setTimeout(() => {
+        btn.textContent = origText;
+        btn.disabled = false;
+      }, 2500);
+    } catch (err) {
+      console.error(err);
+      btn.textContent = 'Er ging iets mis, probeer opnieuw';
+      setTimeout(() => {
+        btn.textContent = origText;
+        btn.disabled = false;
+      }, 2500);
+    }
+  }
+
+  function restart() {
+    Object.keys(answers).forEach(k => answers[k] = null);
+    document.querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+    document.getElementById('next-1').disabled = true;
+    document.getElementById('next-2').disabled = true;
+    document.getElementById('input-naam').value = '';
+    document.getElementById('input-opdrachtgever').value = '';
+    document.getElementById('input-reflectie').value = '';
+    ['input-socialproof','input-t1','input-t2','input-t4','input-t5'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    ['followup-v5','followup-t1','followup-t2','followup-t4','followup-t5'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('visible');
+    });
+    goToStep(0);
+  }
+</script>
+
+</body>
+</html>
